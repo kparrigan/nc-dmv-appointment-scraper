@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using NCDMVAppointmentScraper;
 using NLog;
 using NLog.Extensions.Logging;
+using OpenQA.Selenium.Chrome;
 
 LogManager.Configuration = new NLog.Config.XmlLoggingConfiguration("NLog.config");
 
@@ -16,6 +17,9 @@ services.AddLogging(builder =>
 });
 
 services.AddTransient<Worker>();
+services.AddScoped<IAppointmentService, AppointmentService>();
+services.AddScoped<ScraperConfig, ScraperConfig>();
+services.AddScoped<ChromeDriver, ChromeDriver>();
 
 using var serviceProvider = services.BuildServiceProvider();
 
