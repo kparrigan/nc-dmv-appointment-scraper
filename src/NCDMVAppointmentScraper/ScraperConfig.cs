@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.Configuration;
 
 namespace NCDMVAppointmentScraper
 {
     internal class ScraperConfig
     {
-        public int WaitTimeSeconds = 10;
-        public string Url = "https://skiptheline.ncdot.gov/Webapp/Appointment/Index/a7ade79b-996d-4971-8766-97feb75254de";
+        public int SeleniumWaitTimeSeconds { get; set; }
+        public string DmvUrl { get; set; }
+
+        public static ScraperConfig LoadFromConfiguration(IConfiguration configuration)
+        {
+            var config = new ScraperConfig();
+            configuration.GetSection("ScraperConfig").Bind(config);
+            return config;
+        }
     }
 }

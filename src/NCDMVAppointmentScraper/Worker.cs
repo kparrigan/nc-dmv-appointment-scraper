@@ -22,7 +22,7 @@ namespace NCDMVAppointmentScraper
 
             foreach (var appointment in appointments)
             {
-                _logger.LogInformation("Location: {Location}, Appointment Date: {Date}", appointment.LocationName, appointment.AppointmentDate);
+                _logger.LogInformation("Location: {Location}, Appointment Date: {Date}", appointment.LocationName, appointment.AppointmentDate.ToShortDateString());
             }
 
             _logger.LogInformation("Processing Complete.");

@@ -27,7 +27,7 @@ namespace NCDMVAppointmentScraper
 
                 _logger.LogInformation("Checking for locations with open appointments.");
 
-                _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(_config.WaitTimeSeconds));
+                _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(_config.SeleniumWaitTimeSeconds));
                 ProcessWelcomePage();
                 ProcessAppointmentTypesPage();
 
@@ -72,7 +72,7 @@ namespace NCDMVAppointmentScraper
 
         private void ProcessWelcomePage()
         {
-            _driver.Navigate().GoToUrl(_config.Url);
+            _driver.Navigate().GoToUrl(_config.DmvUrl);
 
             var apptButton = _driver.FindElement(By.Id("cmdMakeAppt")); //click 'Make Appointment' Button on initial page.
             apptButton.Click();
