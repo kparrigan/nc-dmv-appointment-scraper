@@ -16,13 +16,20 @@ namespace NCDMVAppointmentScraper
         {
             _logger.LogInformation("Beginning Processing.");
 
-            var appointments = _appointmentSerice.GetAppointments();
-
-            _logger.LogInformation($"Found {appointments.Count} appointments.");
-
-            foreach (var appointment in appointments)
+            try
             {
-                _logger.LogInformation("Location: {Location}, Appointment Date: {Date}", appointment.LocationName, appointment.AppointmentDate.ToShortDateString());
+                var appointments = _appointmentSerice.GetAppointments();
+
+                _logger.LogInformation($"Found {appointments.Count} appointments.");
+
+                foreach (var appointment in appointments)
+                {
+                    _logger.LogInformation("Location: {Location}, Appointment Date: {Date}", appointment.LocationName, appointment.AppointmentDate.ToShortDateString());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while processing.");
             }
 
             _logger.LogInformation("Processing Complete.");

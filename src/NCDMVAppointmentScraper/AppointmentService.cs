@@ -68,6 +68,10 @@ namespace NCDMVAppointmentScraper
                 _logger.LogError(ex, "Error getting appointments.");
                 throw;
             }
+            finally
+            {
+                _driver.Close();
+            }
         }
 
         private void ProcessWelcomePage()

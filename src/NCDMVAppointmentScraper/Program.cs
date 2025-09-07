@@ -7,14 +7,14 @@ using NLog;
 using NLog.Extensions.Logging;
 using OpenQA.Selenium.Chrome;
 using Quartz;
+using Quartz.Logging;
 
-LogManager.Configuration = new NLog.Config.XmlLoggingConfiguration("NLog.config");
-
-var configBuildet = new ConfigurationBuilder()
+var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build();
 
-var configuration = configBuildet.Build();
+LogManager.Configuration = new NLogLoggingConfiguration(configuration.GetSection("NLog"));
+var logger = LogManager.GetCurrentClassLogger();
 
 var builder = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
@@ -59,6 +59,16 @@ var builder = Host.CreateDefaultBuilder(args)
         services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
     });
 
-await builder.RunConsoleAsync();
-
-NLog.LogManager.Shutdown();
+try
+{
+    logger.Debug("Init main");
+    await builder.RunConsoleAsync();
+}
+catch (Exception ex)
+{
+    logger.Error(ex, "Stopped program because of exception");
+}
+finally
+{
+    LogManager.Shutdown();
+}
