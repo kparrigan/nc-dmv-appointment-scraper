@@ -84,7 +84,7 @@ namespace NCDMVAppointmentScraper
         private void ProcessAppointmentTypesPage()
         {
             const string renewSelector = "div.QflowObjectItem[data-id='3']";
-           _wait.Until(drv => drv.FindElement(By.CssSelector(renewSelector))); //click 'Renew' option once page loads
+            _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(renewSelector)));
             var renewDiv = _driver.FindElement(By.CssSelector(renewSelector));
             renewDiv.Click(); //TODO: still getting intermittent problems after this click
         }
