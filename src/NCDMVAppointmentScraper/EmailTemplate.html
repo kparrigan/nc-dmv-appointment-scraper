@@ -1,0 +1,45 @@
+   <head>
+    <style>
+        table.email-table {
+            width: 80%;
+            margin: 20px auto;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #fafafa;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-collapse: collapse;
+        }
+        .email-table th {
+            background: #fff;
+            padding: 4px;
+            text-align: left;
+            border: 1px solid #eee;
+            font-weight: bold;
+            font-size: large;
+            text-decoration: underline;
+        }
+        .email-table td {
+            background: #fff;
+            padding: 4px;
+            text-align: left;
+            border: 1px solid #eee;
+            font-weight: bold;
+        }
+        .filler {
+            width: 40%;
+        }
+    </style>
+   </head>
+   <body>
+        <table class="email-table">
+            <thead>
+                <tr>
+                    <th>Location Name</th>
+                    <th>Appointment Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {rows}
+            </tbody>
+        </table>
+   </body>

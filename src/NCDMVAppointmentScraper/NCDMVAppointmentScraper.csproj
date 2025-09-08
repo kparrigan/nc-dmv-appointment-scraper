@@ -5,6 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>950a3a15-7292-4b13-bf24-5764121a7e9b</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,11 +23,15 @@
     <PackageReference Include="Selenium.WebDriver" Version="4.35.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="140.0.7339.8000" />
     <PackageReference Include="SeleniumExtras.WaitHelpers" Version="1.0.2" />
+    <PackageReference Include="SendGrid" Version="9.29.3" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EmailTemplate.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

@@ -11,7 +11,9 @@ using Quartz.Logging;
 
 var configuration = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).Build();
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+    .AddUserSecrets<Program>(optional: true)
+    .Build();
 
 LogManager.Configuration = new NLogLoggingConfiguration(configuration.GetSection("NLog"));
 var logger = LogManager.GetCurrentClassLogger();
@@ -32,9 +34,14 @@ var builder = Host.CreateDefaultBuilder(args)
         services.AddSingleton<Worker>();
         services.AddScoped<IAppointmentService, AppointmentService>();
         services.AddScoped<ChromeDriver, ChromeDriver>();
+        services.AddScoped<IEmailService, EmailService>();
 
         services.AddSingleton(provider =>
             ScraperConfig.LoadFromConfiguration(provider.GetRequiredService<IConfiguration>())
+        );
+
+        services.AddSingleton(provider =>
+            EmailConfig.LoadFromConfiguration(provider.GetRequiredService<IConfiguration>())
         );
 
         services.AddQuartz(q =>
