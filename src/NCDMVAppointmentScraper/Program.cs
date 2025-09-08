@@ -33,7 +33,7 @@ var builder = Host.CreateDefaultBuilder(args)
         services.AddSingleton<IConfiguration>(configuration);
         services.AddSingleton<Worker>();
         services.AddScoped<IAppointmentService, AppointmentService>();
-        services.AddScoped<ChromeDriver, ChromeDriver>();
+        services.AddScoped<IWebDriverFactory, WebDriverFactory>();
         services.AddScoped<IEmailService, EmailService>();
 
         services.AddSingleton(provider =>

@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace NCDMVAppointmentScraper
 {
-    internal class AppointmentService(ChromeDriver driver, ILogger<AppointmentService> logger, ScraperConfig config) : IAppointmentService
+    internal class AppointmentService(IWebDriverFactory driverFactory, ILogger<AppointmentService> logger, ScraperConfig config) : IAppointmentService
     {
         private readonly ILogger<AppointmentService> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly ScraperConfig _config = config ?? throw new ArgumentNullException(nameof(config));
-        private readonly ChromeDriver _driver = driver ?? throw new ArgumentNullException(nameof(driver));
+        private readonly IWebDriverFactory _driverFactory = driverFactory ?? throw new ArgumentNullException(nameof(driverFactory));
         private WebDriverWait _wait;
 
         public List<AppointmentRecord> GetAppointments()
@@ -27,21 +27,22 @@ namespace NCDMVAppointmentScraper
 
                 _logger.LogInformation("Checking for locations with open appointments.");
 
-                _wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(_config.SeleniumWaitTimeSeconds));
-                ProcessWelcomePage();
-                ProcessAppointmentTypesPage();
+                using var driver = _driverFactory.Create();
+                _wait = new WebDriverWait(driver, TimeSpan.FromSeconds(_config.SeleniumWaitTimeSeconds));
+                ProcessWelcomePage(driver);
+                ProcessAppointmentTypesPage(driver);
 
                 //Wait for the locations div to load
                 _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(locationsDivSelector)));
 
                 var processedLocations = new HashSet<string>();
-                var location = GetNextLocation(processedLocations);
+                var location = GetNextLocation(driver, processedLocations);
 
                 // Iterate through all locations that appear to have available appointments
                 while (location != null)
                 {
                     const string loadingSelector = ".blockUI.blockOverlay";
-                    var appointmentDate = GetNextAppointment(location.Value.Element); //Get next appointment if there is one.
+                    var appointmentDate = GetNextAppointment(driver, location.Value.Element); //Get next appointment if there is one.
 
                     if (appointmentDate.HasValue)
                     {
@@ -53,12 +54,12 @@ namespace NCDMVAppointmentScraper
                     _wait.Until(ExpectedConditions.InvisibilityOfElementLocated(By.CssSelector(loadingSelector)));
 
                     // Hit the back button to return to the location list
-                    var backButton = _driver.FindElement(By.Id("BackButton"));
+                    var backButton = driver.FindElement(By.Id("BackButton"));
                     backButton.Click();
 
                     // Find the next location if one is available
                     _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(locationsDivSelector)));
-                    location = GetNextLocation(processedLocations);
+                    location = GetNextLocation(driver, processedLocations);
                 }
 
                 return appointments;
@@ -68,42 +69,38 @@ namespace NCDMVAppointmentScraper
                 _logger.LogError(ex, "Error getting appointments.");
                 throw;
             }
-            finally
-            {
-                _driver.Close();
-            }
         }
 
-        private void ProcessWelcomePage()
+        private void ProcessWelcomePage(IWebDriver driver)
         {
-            _driver.Navigate().GoToUrl(_config.DmvUrl);
+            driver.Navigate().GoToUrl(_config.DmvUrl);
 
-            var apptButton = _driver.FindElement(By.Id("cmdMakeAppt")); //click 'Make Appointment' Button on initial page.
+            var apptButton = driver.FindElement(By.Id("cmdMakeAppt")); //click 'Make Appointment' Button on initial page.
             apptButton.Click();
         }
-        private void ProcessAppointmentTypesPage()
+        private void ProcessAppointmentTypesPage(IWebDriver driver)
         {
             const string renewSelector = "div.QflowObjectItem[data-id='3']";
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(renewSelector)));
-            var renewDiv = _driver.FindElement(By.CssSelector(renewSelector));
+            var renewDiv = driver.FindElement(By.CssSelector(renewSelector));
             renewDiv.Click(); //TODO: still getting intermittent problems after this click
         }
 
-        private DateTime? GetNextAppointment(IWebElement locationElement)
+        private DateTime? GetNextAppointment(IWebDriver driver, IWebElement locationElement)
         {
             // Click the loxation's div and wait for the calendar to load
             locationElement.Click();
             _wait.Until(ExpectedConditions.ElementIsVisible(By.CssSelector(".CalendarDateModel.hasDatepicker")));
 
             // Sometimes a location will appear to have available appointments, but when clicked will show a message saying there aren't any ¯\_(ツ)_/¯
-            var validationError = _driver.FindElement(By.CssSelector(".field-validation-error"));
+            var validationError = driver.FindElement(By.CssSelector(".field-validation-error"));
             if (validationError.Displayed)
             {
                 return null;
             }
 
             // Get the first appointment, if any, and return it's date.
-            var appts = _driver.FindElements(By.CssSelector(".ui-state-default.ui-state-active"));
+            var appts = driver.FindElements(By.CssSelector(".ui-state-default.ui-state-active"));
             if (appts != null && appts.Any())
             {
                 var appt = appts[0];
@@ -132,10 +129,10 @@ namespace NCDMVAppointmentScraper
             return null;
         }
 
-        private (string Name, IWebElement Element)? GetNextLocation(HashSet<string> processed)
+        private (string Name, IWebElement Element)? GetNextLocation(IWebDriver driver, HashSet<string> processed)
         {
             // Find the first location that hasn't been processed yet and return it
-            var locations = _driver.FindElements(By.CssSelector(".QflowObjectItem.form-control.ui-selectable.Active-Unit.valid"));
+            var locations = driver.FindElements(By.CssSelector(".QflowObjectItem.form-control.ui-selectable.Active-Unit.valid"));
             foreach (var location in locations)
             {
                 var locationNameDiv = location.FindElement(By.XPath(".//div/div[1]"));
