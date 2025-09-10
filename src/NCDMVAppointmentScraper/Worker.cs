@@ -30,6 +30,7 @@ namespace NCDMVAppointmentScraper
 
                 if (appointments.Any())
                 {
+                    appointments = appointments.OrderBy(a => a.AppointmentDate).ToList();
                     _emailService.SendEmail(appointments);
                 }
             }
